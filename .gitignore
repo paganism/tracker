@@ -8,6 +8,7 @@ site_tracker/tests.py
 site_tracker/migrations/__pycache__
 site_tracker/site_tracker/local_settings.py
 site_tracker/frontend/node_modules
+site_tracker/media/*
 db.sqlite3
 engine.db
 venv
