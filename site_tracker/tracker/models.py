@@ -44,7 +44,7 @@ class AttachField(models.Model):
 
 
 class Issue(TrackingFields, AttachField):
-    """Основная сущность трекера """
+    """ Основная сущность трекера """
     title = models.CharField('название задачи', max_length=200)
     descr = models.TextField(max_length=1000, blank=True, null=True)
     status = models.ManyToManyField('Status', related_name='statuses', blank=True)
@@ -56,7 +56,6 @@ class Issue(TrackingFields, AttachField):
     submitted_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     spent_time = models.IntegerField(blank=True, default=0)
     tracker = models.ForeignKey('Tracker', on_delete=models.SET_NULL, null=True, blank=True)
-    # comment = models.ForeignKey('Comment', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f'{self.title} {self.status} {self.project}'
