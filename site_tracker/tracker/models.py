@@ -45,9 +45,9 @@ class AttachField(models.Model):
 
 class Issue(TrackingFields, AttachField):
     """ Основная сущность трекера """
-    title = models.CharField('название задачи', max_length=200)
+    title = models.CharField(max_length=200)
     descr = models.TextField(max_length=1000, blank=True, null=True)
-    status = models.ManyToManyField('Status', related_name='statuses', blank=True)
+    status = models.ForeignKey('Status', on_delete=models.SET_NULL, related_name='statuses', null=True, blank=True)
     project = models.ForeignKey('Project', on_delete=models.CASCADE,)
     priority = models.ForeignKey('Priority', on_delete=models.CASCADE, null=True, blank=True)
     assigned_to = models.ForeignKey(CustomUser, related_name='assigned_to', on_delete=models.CASCADE, null=True, blank=True)
@@ -59,10 +59,6 @@ class Issue(TrackingFields, AttachField):
 
     def __str__(self):
         return f'{self.title} {self.status} {self.project}'
-
-    def get_all_statuses(self):
-        statuses_qs = Status.objects.filter(statuses=self.id)
-        return [x.statusname for x in statuses_qs]
 
     def get_all_informed(self):
         inform_qs = CustomUser.objects.filter(informed_users=self.id)
@@ -76,7 +72,7 @@ class Issue(TrackingFields, AttachField):
 
 
 class Comment(AttachField):
-    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, null=True)
+    issue = models.ForeignKey(Issue, related_name='comments', on_delete=models.CASCADE, null=True)
     text = models.TextField(max_length=1000, blank=True, null=True)
     submitted_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -96,13 +92,6 @@ class Tracker(models.Model):
 
     def __str__(self):
         return self.title
-
-
-# class TaskType(models.Model):
-#     taskname = models.CharField('название задачи', max_length=32, null=True, blank=True)
-#
-#     def __str__(self):
-#         return f'{self.taskname}'
 
 
 class Status(models.Model):

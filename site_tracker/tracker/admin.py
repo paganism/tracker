@@ -10,7 +10,8 @@ class IssueAdmin(admin.ModelAdmin):
                     'priority',
                     'submitted_by',
                     'assigned_to',
-                    'get_all_statuses',
+                    # 'get_all_statuses',
+                    'status',
                     'get_all_informed',
                     'get_all_all_assoc')
     list_filter = ('title', 'tracker', 'priority', )

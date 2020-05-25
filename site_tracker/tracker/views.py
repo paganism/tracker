@@ -1,13 +1,17 @@
 from django.shortcuts import render
-
-
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Issue
+from users.models import CustomUser
+from rest_framework import viewsets
 from .serializers import *
+
+
+class UsersViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all().order_by('date_joined')
+    serializer_class = UserSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -17,9 +21,9 @@ def issues_list(request):
         data = []
         nextPage = 1
         previousPage = 1
-        issues = Issue.objects.all()
+        issues = Issue.objects.all().order_by('-created')
         page = request.GET.get('page', 1)
-        paginator = Paginator(issues, 5)
+        paginator = Paginator(issues, 2)
         try:
             data = paginator.page(page)
         except PageNotAnInteger:
