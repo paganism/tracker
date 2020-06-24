@@ -1,6 +1,5 @@
 import  React, { Component } from  'react';
 import  IssuesService  from  './IssuesService';
-import  CommonService from './common';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import SaveIcon from '@material-ui/icons/Save';
@@ -8,8 +7,7 @@ import 'date-fns';
 import IssueParams from './containers/IssueParams';
 import Description from './containers/Description';
 import { Redirect } from 'react-router-dom';
-
-import DialogWindow from './components/DialogWindow';
+import SideBar from './Side';
 
 
 const useStyles = theme => ({
@@ -42,6 +40,7 @@ const useStyles = theme => ({
     },
     table: {
       minWidth: 650,
+      fontSize: theme.typography.pxToRem(10),
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
@@ -50,14 +49,10 @@ const useStyles = theme => ({
       fontSize: theme.typography.pxToRem(10),
       color: theme.palette.text.secondary,
     },
-    table: {
-      fontSize: theme.typography.pxToRem(10),
-    }
   });
 
 
 const issuesService = new IssuesService();
-const commonService = new CommonService();
 
 class CreateIssue extends Component {
     
@@ -118,8 +113,6 @@ class CreateIssue extends Component {
         this.handleChangeSingleSelect = this.handleChangeSingleSelect.bind(this);
         this.handleChangeMultipleSelect = this.handleChangeMultipleSelect.bind(this);
         this.handleDateChange = this.handleDateChange.bind(this);
-        this.handleClickOpen = this.handleClickOpen.bind(this);
-        this.handleClose =this.handleClose.bind(this);
       }
     
     componentDidMount() {
@@ -160,10 +153,6 @@ class CreateIssue extends Component {
     handleChangeSingleSelect(e, fieldName) {
       let value = e.target.value;
       let name = e.target.name;
-      console.log('VALUE');
-      console.log(value);
-      console.log(this.state.issueData);
-      console.log();
       this.setState(prevState => ({
         issueData: {
           ...prevState.issueData,             
@@ -173,7 +162,6 @@ class CreateIssue extends Component {
           }
         }
       }),
-      () => console.log(this.state.issueData)
       );
       this.setState({showSubmit: true});
     }
@@ -226,12 +214,11 @@ class CreateIssue extends Component {
       let issueData = this.state.issueData;
 
       if (!issueData.title) {
-        this.setState({showError: true})
+        return this.setState({showError: true})
       }
   
       issuesService.createIssue(issueData).then((result) => {
         console.log('result')
-        console.log(result.pk)
         this.setState({redirect: result.pk})
       }
       );
@@ -253,7 +240,6 @@ class CreateIssue extends Component {
     render() {
 
         const { classes } = this.props;
-        const users = this.state.allUsers;
 
         const showSubmit = this.state.showSubmit;
 
@@ -274,31 +260,29 @@ class CreateIssue extends Component {
             type={"default"}
             variant="contained"
             size="small"
+            color="primary"
             startIcon={<SaveIcon />}
-            onClick={(e) => this.handleClickOpen(e)}
-            // onClick={(e) => this.handleSubmit(e)}
+            onClick={(e) => this.handleSubmit(e)}
           >Save
           </Button>
 
           </React.Fragment>;
           } 
 
-          const names = this.state.allUsers?.map(val => val.username);
+        const names = this.state.allUsers?.map(val => val.username);
 
-          const personName = this.state.personName;
+        const personName = this.state.personName;
           
-
-        const defaultValue = 0;
-
         const { redirect } = this.state;
 
         if (redirect) {
           return <Redirect to={`/issues/${redirect}`}/>;
         }
           
-
         return (
+          
             <div style={{marginLeft: 15 + 'em'}}>
+              <SideBar/>
 
               <IssueParams
                 // common
@@ -352,35 +336,6 @@ class CreateIssue extends Component {
                 {button}
                 {errorMessage}
               </div>
-              {/* Delete confirmation */}
-              <DialogWindow 
-                open={this.state.open}
-                handleClose={this.handleClose}
-                text="Are you shure?"
-                handleSubmit={(e) => this.handleSubmit(e)}
-              />
-              {/* <Dialog
-        open={this.state.open}
-        onClose={this.handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Let Google help apps determine location. This means sending anonymous location data to
-            Google, even when no apps are running.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.handleClose} color="primary">
-            Disagree
-          </Button>
-          <Button onClick={(e) => this.handleSubmit(e)} color="primary" autoFocus>
-            Agree
-          </Button>
-        </DialogActions>
-      </Dialog> */}
             </div>
         );
         }

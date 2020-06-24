@@ -1,7 +1,22 @@
 import axios from 'axios';
-export const apiURL = 'http://localhost:8000';
+import  IssuesService  from  './IssuesService';
+import {apiURL} from './IssuesService';
+
+
+const issuesService = new IssuesService();
 
 export default class AuthService{
+    
+
+    getConfig() {
+        let storageLogin = localStorage.getItem('login');
+        let acsess_token = JSON.parse(storageLogin).token
+  
+        let AuthStr = 'Token '.concat(acsess_token); 
+  
+        const config = { 'Authorization': AuthStr}
+        return config
+      }
 
     login(email, password) {
         let params = {
@@ -10,6 +25,12 @@ export default class AuthService{
         }
         const url = `${apiURL}/api/login`;
         return axios.post(url, params).then(response => response).catch(error => error);
+    }
+
+    isAuth() {
+        const url = `${apiURL}/api/auth`;
+        let config = issuesService.getConfig();
+        return axios.get(url, {headers: config}).then(response => response).catch(error => error);
     }
 
     logout(user) {

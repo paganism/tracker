@@ -1,58 +1,30 @@
-import  React, { Component } from  'react';
-import  IssuesService  from  './IssuesService';
-import  CommonService from './common';
+import  React, { Component, Children } from  'react';
+
 import Grid from '@material-ui/core/Grid';
-// import { makeStyles, useTheme } from '@material-ui/core/styles';
 import { withStyles } from '@material-ui/core/styles';
-// import TextField from '@material-ui/core/TextField';
-import Divider from '@material-ui/core/Divider';
-// import InputField from './components/InputField';
-// import DatePicker from './components/DatePicker';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-
-import TextArea from "components/TextArea";
-// import Button from "components/Button";
-
 import Paper from '@material-ui/core/Paper';
-// import clsx from 'clsx';
-// import Input from '@material-ui/core/Input';
-// import InputLabel from '@material-ui/core/InputLabel';
-// import MenuItem from '@material-ui/core/MenuItem';
-// import FormControl from '@material-ui/core/FormControl';
-// import FormHelperText from '@material-ui/core/FormHelperText';
-// import ListItemText from '@material-ui/core/ListItemText';
-// import Select from '@material-ui/core/Select';
-// import Checkbox from '@material-ui/core/Checkbox';
-// import Chip from '@material-ui/core/Chip';
-
+import FormControl from '@material-ui/core/FormControl';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
-// import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
-// import TableHead from '@material-ui/core/TableHead';
-// import TableRow from '@material-ui/core/TableRow';
-
 import Button from '@material-ui/core/Button';
 import SaveIcon from '@material-ui/icons/Save';
-import DeleteIcon from '@material-ui/icons/Delete';
-// import EditIcon from '@material-ui/icons/Edit';
 import AddIcon from '@material-ui/icons/Add';
-import IconButton from '@material-ui/core/IconButton';
-// import Modal from '@material-ui/core/Modal';
-import  FormTableRow  from  './components/FormTableRow';
-
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelActions from '@material-ui/core/ExpansionPanelActions';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import 'date-fns';
+
+import  FormTableRow  from  './components/FormTableRow';
+import DialogWindow from './components/DialogWindow';
+
 import IssueParams from './containers/IssueParams';
 import Description from './containers/Description';
-
 import AccocTable from './containers/Associations';
+import CreateComment from './containers/CreateCommentContainer';
 
+import  IssuesService  from  './IssuesService';
+import SideBar from './Side';
 
 const useStyles = theme => ({
     root: {
@@ -98,9 +70,7 @@ const useStyles = theme => ({
     }
   });
 
-
 const issuesService = new IssuesService();
-const commonService = new CommonService();
 
 class Issue extends Component {
     
@@ -119,7 +89,9 @@ class Issue extends Component {
             allPriorities: [],
             informedUsers: [],
             personName: [],
-            open: false
+            open: false,
+            assocInputValue: [],
+            errorAssoc: false
         };
         this.handleChangeComment = this.handleChangeComment.bind(this);
         this.handleTextArea = this.handleTextArea.bind(this);
@@ -127,10 +99,13 @@ class Issue extends Component {
         this.handleModifyComment = this.handleModifyComment.bind(this);
 
         this.handleChangeAddComment = this.handleChangeAddComment.bind(this);
+        this.handleDeleteAssoc = this.handleDeleteAssoc.bind(this);
 
         this.handleChangeSingleSelect = this.handleChangeSingleSelect.bind(this);
         this.handleChangeMultipleSelect = this.handleChangeMultipleSelect.bind(this);
         this.handleDateChange = this.handleDateChange.bind(this);
+        this.handleClickOpen = this.handleClickOpen.bind(this);
+        this.handleClose = this.handleClose.bind(this);
       }
     
     componentDidMount() {
@@ -138,10 +113,10 @@ class Issue extends Component {
         if(params && params.pk)
         {
             issuesService.getIssue(params.pk).then((result) => {
-                this.setState({ issueData:  result});
-                this.setState({allComments: result.comments});
-                this.setState({informedUsers: result.inform});
-                this.setState({personName: result.inform?.map(user => user.pk)});
+                this.setState({ issueData:  result.data});
+                this.setState({allComments: result.data.comments});
+                this.setState({informedUsers: result.data.inform});
+                this.setState({personName: result.data.inform?.map(user => user.pk)});
          })
         };
         issuesService.getUsers().then((result) => {
@@ -161,9 +136,9 @@ class Issue extends Component {
         });
     }
     
-   
     handleTextArea(e, field) {
       let value = e.target.value;
+
       this.setState(
         prevState => ({
           issueData: {
@@ -175,6 +150,51 @@ class Issue extends Component {
       );
     }
 
+    handleAddAssoc(e, fieldName) {
+      e.preventDefault();
+      const { match: { params } } = this.props;
+      const value = this.state.assocInputValue;
+      const ass = this.state.issueData.association;
+
+      issuesService.getIssue(value).then((result) => {
+          if(result.status === 200 ) {
+            if (Number(result.data.pk) !== Number(this.props.match.params.pk)) {
+              ass.push({ "pk": result.data.pk, "status": result.data.status })
+
+              const issueData = this.state.issueData;
+              issueData.association = ass;
+              issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)})
+          }
+          else {
+            this.setState({errorAssoc: true});
+          }
+        } else {
+          this.setState({errorAssoc: true});
+        }
+      })
+    }
+
+    handleDeleteAssoc(e, pk) {
+      let issueAssoc = this.state.issueData.association;
+
+      issueAssoc.forEach(assoc => {
+        if (Number(assoc.pk) === Number(pk)) {
+          let index = issueAssoc.indexOf(assoc)
+          issueAssoc.splice(index, 1)
+        }
+       })
+       
+       this.setState(
+        prevState => ({
+          issueData: {
+            ...prevState.issueData,
+            association: issueAssoc,
+          }
+        })
+      );
+
+      issuesService.updateIssue(this.state.issueData) //.then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)})
+    }
 
     handleChangeAddComment(e) {
       let value = e.target.value;
@@ -187,9 +207,7 @@ class Issue extends Component {
           }
         }),
       );
-      console.log(this.state.newComment)
     }
-
 
     handleChangeSingleSelect(e, fieldName) {
       let value = e.target.value;
@@ -215,7 +233,6 @@ class Issue extends Component {
         prevState => ({
           personName: value}));
 
-
       for (let i = 0; i < value.length; i++) {
         this.state.allUsers.forEach(user => {
           if (user.pk === value[i]) {
@@ -232,10 +249,8 @@ class Issue extends Component {
           }
         })
       );
-
       this.setState({showSubmit: true});
     };
-
 
     handleChangeComment(e, index, pk) {
 
@@ -254,9 +269,7 @@ class Issue extends Component {
                   comments: this.state.allComments
               })
       ));
-      console.log(this.state.issueData);
     }
-
 
     handleDateChange(date) {
       let newDate = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
@@ -277,14 +290,12 @@ class Issue extends Component {
       issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
     }
 
-    handleDelete(e) {
-      e.preventDefault();
-      console.log(e);
-      let issueData = this.state.issueData;
+    // handleDelete(e) {
+    //   e.preventDefault();
+    //   let issueData = this.state.issueData;
   
-      issuesService.deleteComment(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
-    }
-
+    //   issuesService.deleteComment(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
+    // }
 
     handleModifyComment(e, pk) {
       e.preventDefault();
@@ -293,7 +304,6 @@ class Issue extends Component {
       issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
     }
 
-
     handleCreateComment(e, pk) {
       e.preventDefault();
       let newComment = this.state.newComment;
@@ -301,39 +311,31 @@ class Issue extends Component {
       issuesService.createComment(newComment).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
     }
 
-
     handleDeleteComment(e, pk) {
       e.preventDefault();
-      console.log(e);
       issuesService.deleteComment(pk).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
     }
-  
-    handleDeleteAssoc(e, pk) {
-      e.preventDefault();
-      console.log(e);
-      issuesService.deleteComment(pk).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
-    }
-
-    getNameField = (pk, array) => {
-      array.forEach((item) => {
-          if (item.pk === pk) {
-            return item.username;
-          }
-          });
-      }
 
     dateFormat = (date) => {
       const newDate = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
       return newDate;
     }
 
+    handleClose = (e) => {
+      e.stopPropagation();
+      let value = e.target.value;
+      this.setState({isModalOpen: false});
+    }
+
+    handleClickOpen = () => {
+      this.setState({isModalOpen: true});
+    }
+
     render() {
 
         const { classes } = this.props;
-        const users = this.state.allUsers;
 
         const showSubmit = this.state.showSubmit;
-        const field = 'username';
 
         const comments = this.state.allComments;
 
@@ -345,12 +347,22 @@ class Issue extends Component {
               type={"default"}
               variant="contained"
               size="small"
+              color="primary"
               startIcon={<SaveIcon />}
               onClick={(e) => this.handleSubmitDescription(e)}
             >Save
             </Button>
           </React.Fragment>;
           } 
+
+        const errorAssoc = this.state.errorAssoc;
+        let errorMessage;
+        if (errorAssoc) {
+            errorMessage = <React.Fragment>
+              
+            Wrong issue ID
+          </React.Fragment>;
+          } ;
 
           const names = this.state.allUsers?.map(val => val.username);
 
@@ -367,26 +379,27 @@ class Issue extends Component {
           if (issueAssoc?.length > 0) {
             assoc = <React.Fragment>
               <div>
-                <Grid item xs={7}>
-                  <AccocTable
+                <Grid item xs={7} style={{ marginTop: 10 }}>
+                  <Typography>Associations</Typography>
+                  <AccocTable 
                     rows={issueAssoc}
-
-
+                    handleDelete={this.handleDeleteAssoc}
                   />
                 </Grid>
               </div>
             </React.Fragment>
           }
           else {
-            assoc = <React.Fragment><Typography>There is no associations</Typography></React.Fragment> 
+            assoc = <React.Fragment><Typography style={{marginTop: 10}}>There is no associations yet</Typography></React.Fragment> 
           }
 
           
         return (
-            <div style={{marginLeft: 15 + 'em'}}>
-              
-  
 
+            <div style={{marginLeft: 15 + 'em'}}>
+              <SideBar/>
+  
+              {/* Issue headers */}
               <IssueParams
                 // common
                 formControl={classes.formControl}
@@ -439,64 +452,48 @@ class Issue extends Component {
                 {button}
               </div>
 
-
-              <Grid item xs={12} style={{marginTop: 10, marginBottom: 10}}>
+              {/* Add association button */}
+              <Grid item xs={12} style={{marginTop: 10, marginBottom: 20}}>
                 <div>
                 <Button
                   size="small"
                   variant="contained"
-                  color="default"
+                  color="primary"
                   startIcon={<AddIcon />}
+                  onClick={(e) => this.handleClickOpen(e)}
                 >
                   Link Issue
                 </Button>
-                
+
+                {/* Add association dialog */}
+                <DialogWindow 
+                    open={this.state.isModalOpen}
+                    handleClose={e => this.handleClose(e)}
+                    title="Add Association"
+                    content={<FormControl >
+                              <TextField 
+                                label="Id Issue" 
+                                variant="outlined"
+                                type="number"
+                                onChange={(e) => this.setState({ assocInputValue: e.target.value })} />
+                            </FormControl>}
+                    text={ errorMessage }
+                    handleSubmit={e => this.handleAddAssoc(e)}
+                  />
                 </div>
+                {/* Associations declared in var in render */}
                 { assoc }
               </Grid>
 
               
+              {/* Create comment expansion panel */}
+              <CreateComment
+                newCommentText={this.state.newComment.text}
+                handleChange={this.handleChangeAddComment}
+                handleClick={(e) => this.handleCreateComment(e)}
+              />         
 
-              <div style={{ marginTop: 1 + 'em'}}>
-                <Grid item xs={7}>
-                  <ExpansionPanel>
-                    <ExpansionPanelSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel-content"
-                      id="panel-header"
-                    >
-                      <div >
-                        <Typography className={classes.heading}>Add comment</Typography>
-                      </div>
-                     
-                    </ExpansionPanelSummary>
-                    <ExpansionPanelDetails >
-                      <Grid item xs={12}>
-                        <TextArea
-                          title={"Comment"}
-                          rows={6}
-                          value={""}
-                          name={"addCommentField"}
-                          value={this.state.newComment.text}
-                          handleChange={this.handleChangeAddComment}
-                          placeholder={"your comment here"}
-                          allignJustify
-                        />
-                      </Grid>
-                    </ExpansionPanelDetails>
-                    <Divider />
-                    <ExpansionPanelActions>
-                      <Button size="small">Clear</Button>
-                      <Button size="small" color="primary"
-                        onClick={(e) => this.handleCreateComment(e)}
-                      >
-                        Save
-                      </Button>
-                    </ExpansionPanelActions>
-                  </ExpansionPanel>
-                  </Grid>
-              </div>              
-
+              {/* Comments table */}
               <div>
                 <Grid item xs={10} style={{marginTop: 3 + 'em'}}>
                   <TableContainer component={Paper}>

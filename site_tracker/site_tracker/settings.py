@@ -1,8 +1,8 @@
 import os
 
-
 from environs import Env
 from dotenv import load_dotenv
+import datetime
 import logging
 
 load_dotenv()
@@ -23,7 +23,7 @@ SECRET_KEY = '+q&fk19x35^+7x9aiu(1=2j8i2!^j&zg1^di781x7=gq@c!f27'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', ]
 
 INTERNAL_IPS = ['127.0.0.1', ]
 
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
 
     # Local
@@ -112,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -120,21 +121,36 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
 STATIC_URL = '/static/'
 
-# CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:8000',
     'http://localhost:8080',
     'http://localhost:3000',
-    'http://localhost'
+    'http://192.168.31.238:3000',
+    'http://192.168.31.238:8000',
+    'http://192.168.31.238:8080',
+    'http://192.168.31.61:3000',
+    'http://192.168.31.61:8000',
+    'http://192.168.31.160:8000',
+    'http://192.168.31.160:3000',
+    'http://localhost',
 )
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        # 'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
+
+AUTHENTICATION_BACKENDS = ['tracker.backends.EmailBackend']

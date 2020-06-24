@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Redirect } from 'react-router-dom';
 
 import  AuthService  from  './AuthService';
 
@@ -8,20 +9,19 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import Link from '@material-ui/core/Link';
-import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { withStyles } from '@material-ui/core/styles';
-import { Redirect } from 'react-router-dom';
+
 
 
 const authService = new AuthService();
 
 const useStyles = theme => ({
   root: {
-    height: '100vh',
-    marginLeft: 15 + 'em',
-    
+     height: '80vh',
+     display: 'flex',
+     alignItems: 'center',
+     justifyContent: 'center'
   },
   paper: {
     margin: theme.spacing(8, 4),
@@ -55,11 +55,25 @@ class LoginPage extends Component {
       formValid: false,
       showError: false,
       login: false,
+      isAuth: false,
 
     }
 
     this.onSubmit = this.onSubmit.bind(this);
     this.handleInput = this.handleInput.bind(this);
+  }
+
+
+  componentDidMount() {
+    
+    authService.isAuth().then((result) => {
+      console.log(result)
+      if (result.data === "true") {
+        this.setState({isAuth: result.data})
+      }
+    }).catch(error => {
+      console.log(error)
+    });
   }
 
   handleInput = (e) => {
@@ -68,7 +82,10 @@ class LoginPage extends Component {
     const value = e.target.value;
     this.setState({[name]: value},
                   () => { this.validateField(name, value) });
+
     this.setState({showError: false});
+    console.log(this.state.email)
+    console.log(this.state.password)
   }
 
   onSubmit(e) {
@@ -123,6 +140,9 @@ class LoginPage extends Component {
 
   render() {
     const { classes } = this.props;
+    if (this.state.isAuth) {
+      return <Redirect to={`/issues/`}/>; 
+    }
 
     const disableSubmit = this.state.formValid ? false : true
 
@@ -194,21 +214,6 @@ class LoginPage extends Component {
 
                 {errorMessage}
 
-                <Grid container>
-                  <Grid item xs>
-                    <Link href="#" variant="body2">
-                      Forget password?
-                    </Link>
-                  </Grid>
-                  <Grid item>
-                    <Link href="#" variant="body2">
-                      Register
-                    </Link>
-                  </Grid>
-                </Grid>
-                <Box mt={5}>
-                  HVG
-                </Box>
               </form>
             </div>
           </Grid>
