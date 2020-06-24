@@ -9,14 +9,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('pk', 'username', 'first_name', 'email', 'last_name', 'is_active')
 
     pk = serializers.IntegerField(read_only=False)
+    username = serializers.CharField(read_only=True)
 
-
-class UserSerializerWithoutUsernameField(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ('pk', 'first_name', 'email', 'last_name')
-
-    pk = serializers.IntegerField(read_only=False)
 
 class StatusSerializer(serializers.ModelSerializer):
     class Meta:
@@ -91,12 +85,12 @@ class IssueSerializer(serializers.ModelSerializer):
         )
 
 
-    assigned_to = UserSerializerWithoutUsernameField(many=False, read_only=False)
+    assigned_to = UserSerializer(many=False, read_only=False)
     status = StatusSerializer(many=False, read_only=False)
     project = ProjectSerializer(many=False, read_only=False)
     priority = PrioritySerializer(many=False, read_only=False)
     tracker = TrackertSerializer(many=False, read_only=False)
-    inform = UserSerializerWithoutUsernameField(many=True, read_only=False)
+    inform = UserSerializer(many=True, read_only=False)
     submitted_by = UserSerializer(many=False, read_only=True)
     association = IssueAssocSerializer(many=True, read_only=False)
     comments = CommentSerializer(many=True, read_only=False)
@@ -105,8 +99,6 @@ class IssueSerializer(serializers.ModelSerializer):
         return Model.objects.get(pk=data.get('pk'))
 
     def update(self, instance, validated_data):
-        if self.context['request'].method == 'PUT':
-            self.fields['assigned_to'] = UserSerializerWithoutUsernameField(many=False, read_only=False)
 
         comments_data = validated_data.pop('comments', [])
         tracker_data = validated_data.pop('tracker')
@@ -116,7 +108,6 @@ class IssueSerializer(serializers.ModelSerializer):
         assigned_data = validated_data.pop('assigned_to')
         inform_data = validated_data.pop('inform', [])
         assoc_data = validated_data.pop('association', [])
-
 
         instance = super().update(instance, validated_data)
 

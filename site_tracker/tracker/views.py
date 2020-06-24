@@ -65,16 +65,8 @@ def is_auth(request):
 
 
 class UsersViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all().order_by('date_joined')
+    queryset = CustomUser.objects.filter(id__gt=0, is_active=True, is_staff=False).order_by('date_joined')
     serializer_class = UserSerializer
-
-    def get_serializer_class(self):
-        serializer_class = self.serializer_class
-
-        if self.request.method == 'PUT':
-            serializer_class = UserSerializerWithoutUsernameField
-
-        return serializer_class
 
 
 class PriorityViewSet(viewsets.ModelViewSet):
