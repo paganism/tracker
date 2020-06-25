@@ -9,7 +9,7 @@ import Button from '@material-ui/core/Button';
 
 const DialogWindow = props => {
   
-    const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);

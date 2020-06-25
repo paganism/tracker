@@ -14,16 +14,18 @@ import ListIcon from '@material-ui/icons/List';
 import BarChartIcon from '@material-ui/icons/BarChart';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import { useState, useEffect } from 'react';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import AuthService from './AuthService';
+import { Redirect } from 'react-router-dom';
 
+
+const authService = new AuthService();
 
 const drawerWidth = 190;
 
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
-  },
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
   },
   drawer: {
     width: drawerWidth,
@@ -34,22 +36,29 @@ const useStyles = makeStyles((theme) => ({
   },
   drawerContainer: {
     overflow: 'auto',
-  },
-  content: {
     flexGrow: 1,
-    padding: theme.spacing(3),
   },
 }));
 
 export default function SideBar() {
   const classes = useStyles();
   const [showSideBar, setshowSideBar] = useState(true);
+  const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
     if (window.location.pathname === '/login' || window.location.pathname === '/') {
         setshowSideBar(false)
       }
   });
+
+  const handleListItemClick = () => {
+    authService.logout().then(result => {
+      if (result.status === 200) {
+        localStorage.removeItem("login");
+        setRedirect(true)
+      }
+    })
+  }
 
   let sideBar;
   if (showSideBar) {
@@ -63,9 +72,7 @@ export default function SideBar() {
       >
         <Toolbar />
         <div className={classes.drawerContainer}>
-          <List>
-            {/* {['Issues', 'Starred', 'Send email', 'Drafts'].map((text, index) => ( */}
-              
+          <List>            
               <Link 
                     color={"textPrimary"}
                     href={`/issue/create`}>
@@ -95,8 +102,21 @@ export default function SideBar() {
               </ListItem>
           </List>
         </div>
+
+
+        <ListItem 
+          button
+          onClick={handleListItemClick}
+          >
+          <ListItemIcon><ExitToAppIcon /> </ListItemIcon>
+          <ListItemText primary={"Log Out"} />
+        </ListItem>
       </Drawer>
     </React.Fragment>
+  }
+
+  if (redirect) {
+    return <Redirect to='/login' />
   }
 
   return (
@@ -104,16 +124,6 @@ export default function SideBar() {
       <CssBaseline />
      {sideBar}
 
-
-
-      {/* display sideBar depends on current screen */}
-      
-
-      <main className={classes.content}>
-        
-        
-        
-      </main>
     </div>
   );
 }

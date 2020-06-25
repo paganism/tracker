@@ -53,6 +53,14 @@ def login(request):
 
 
 @csrf_exempt
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def logout(request):
+    request.user.auth_token.delete()
+    return Response('true', status=HTTP_200_OK)
+
+
+@csrf_exempt
 @api_view(["GET"])
 @permission_classes((AllowAny,))
 def is_auth(request):

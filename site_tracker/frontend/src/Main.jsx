@@ -20,7 +20,6 @@ export default function Main() {
   const classes = useStyles();
 
   authService.isAuth().then((result) => {
-    console.log(result)
   }).catch(error => {
     console.log(error)
   });

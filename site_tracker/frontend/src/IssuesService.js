@@ -13,12 +13,6 @@ export default class IssueService{
 
         return config
       }
-
-      // let acsess_token = JSON.parse(storageLogin).token
-
-      // let AuthStr = 'Token '.concat(acsess_token); 
-
-      // const config = { 'Authorization': AuthStr}
       return config
     }
 

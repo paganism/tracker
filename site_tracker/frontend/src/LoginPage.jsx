@@ -67,12 +67,10 @@ class LoginPage extends Component {
   componentDidMount() {
     
     authService.isAuth().then((result) => {
-      console.log(result)
       if (result.data === "true") {
         this.setState({isAuth: result.data})
       }
     }).catch(error => {
-      console.log(error)
     });
   }
 
@@ -84,8 +82,6 @@ class LoginPage extends Component {
                   () => { this.validateField(name, value) });
 
     this.setState({showError: false});
-    console.log(this.state.email)
-    console.log(this.state.password)
   }
 
   onSubmit(e) {

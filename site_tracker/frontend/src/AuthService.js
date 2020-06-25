@@ -33,7 +33,19 @@ export default class AuthService{
         return axios.get(url, {headers: config}).then(response => response).catch(error => error);
     }
 
-    logout(user) {
+    logout() {
+        const url = `${apiURL}/api/logout`;
+        let config = issuesService.getConfig();
+        console.log(config)
+        // return axios.post(url, {headers: config}).then(response => response).catch(error => error);
 
+        return axios({
+            method: 'post',
+            url: `${apiURL}/api/logout`,
+            withCredentials: true, 
+            headers: config,
+          }).catch(function (error) {
+            console.log(error);
+          });
     }
 }

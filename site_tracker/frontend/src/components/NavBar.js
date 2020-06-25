@@ -26,16 +26,6 @@ const useStyles = makeStyles((theme) => ({
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
   },
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0,
-  },
-  drawerPaper: {
-    width: drawerWidth,
-  },
-  drawerContainer: {
-    overflow: 'auto',
-  },
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
@@ -58,7 +48,6 @@ export default function NavBar() {
           </Typography>
         </Toolbar>
       </AppBar>
-
       <main className={classes.content}>
       </main>
     </div>

@@ -1,10 +1,11 @@
 from django.urls import path
 from .views import UsersViewSet, CommentsViewSet, login, IssueViewSet, TrackerViewSet, \
-    ProjectViewSet, StatusViewSet, PriorityViewSet, is_auth
+    ProjectViewSet, StatusViewSet, PriorityViewSet, is_auth, logout
 
 
 urlpatterns = [
     path('login', login),
+    path('logout', logout),
     path('auth', is_auth),
     path("users/", UsersViewSet.as_view({'get': 'list', 'post': 'create'}), name='apiusers'),
     path("users/<pk>", UsersViewSet.as_view({'get': 'retrieve', 'put': 'update'}), name='apiuser'),
