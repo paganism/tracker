@@ -22,6 +22,7 @@ footer: {
     backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(2),
     marginTop: 50,
+    verticalAlign: "bottom"
 
 },
 }));

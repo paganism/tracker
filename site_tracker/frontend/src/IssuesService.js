@@ -61,8 +61,8 @@ export default class IssueService{
             console.log(error);
           });
     }
+
     updateIssue(issue){
-        // console.log(issue);
         const url = `${apiURL}/api/issues/${issue.pk}`;
         return axios.put(url, issue).then(response => response.data).catch(function (error) {
           console.log(error);
@@ -75,13 +75,6 @@ export default class IssueService{
           });
     }
 
-    createComment1(issue){
-        const url = `${apiURL}/api/comments/`;
-        return axios.post(url,issue).catch(function (error) {
-            console.log(error);
-          });
-    }
-    
     createComment(comment) {
         let storageLogin = localStorage.getItem('login');
         let acsess_token = JSON.parse(storageLogin).token
@@ -99,7 +92,6 @@ export default class IssueService{
           });
           
     };
-
 
     deleteComment(pk){
         let storageLogin = localStorage.getItem('login');

@@ -25,6 +25,8 @@ import CreateComment from './containers/CreateCommentContainer';
 
 import  IssuesService  from  './IssuesService';
 import SideBar from './Side';
+import Common from './common';
+
 
 const useStyles = theme => ({
     root: {
@@ -70,7 +72,12 @@ const useStyles = theme => ({
     }
   });
 
+const errorMessages = {
+  "comment": "comment is empty"
+}
+
 const issuesService = new IssuesService();
+const common = new Common();
 
 class Issue extends Component {
     
@@ -91,12 +98,13 @@ class Issue extends Component {
             personName: [],
             open: false,
             assocInputValue: [],
-            errorAssoc: false
+            errorAssoc: false,
+            emptyField: { "comment": false },
         };
         this.handleChangeComment = this.handleChangeComment.bind(this);
         this.handleTextArea = this.handleTextArea.bind(this);
         this.handleSubmitDescription = this.handleSubmitDescription.bind(this);
-        this.handleModifyComment = this.handleModifyComment.bind(this);
+        this.handleSubmitComment = this.handleSubmitComment.bind(this);
 
         this.handleChangeAddComment = this.handleChangeAddComment.bind(this);
         this.handleDeleteAssoc = this.handleDeleteAssoc.bind(this);
@@ -113,10 +121,16 @@ class Issue extends Component {
         if(params && params.pk)
         {
             issuesService.getIssue(params.pk).then((result) => {
+              if (result.status === 200) {
                 this.setState({ issueData:  result.data});
                 this.setState({allComments: result.data.comments});
                 this.setState({informedUsers: result.data.inform});
                 this.setState({personName: result.data.inform?.map(user => user.pk)});
+              }
+              else {
+                this.props.history.push(`/404`)
+              }
+                
          })
         };
         issuesService.getUsers().then((result) => {
@@ -252,6 +266,24 @@ class Issue extends Component {
       this.setState({showSubmit: true});
     };
 
+    handleDateChange(date) {
+      let newDate = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+      this.setState(prevState => ({
+        issueData: {
+          ...prevState.issueData,
+          due_date: newDate
+        }
+      }));
+      this.setState({showSubmit: true});
+    }
+
+    handleSubmitDescription(e) {
+      e.preventDefault();
+      let issueData = this.state.issueData;
+  
+      issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
+    }
+
     handleChangeComment(e, index, pk) {
 
       let value = e.target.value;
@@ -271,44 +303,51 @@ class Issue extends Component {
       ));
     }
 
-    handleDateChange(date) {
-      let newDate = `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
-      this.setState(prevState => ({
-        issueData: {
-          ...prevState.issueData,
-          due_date: newDate
-        }
-      }));
-      this.setState({showSubmit: true});
-    }
-
-
-    handleSubmitDescription(e) {
+    handleSubmitComment(e, pk) {
       e.preventDefault();
       let issueData = this.state.issueData;
-  
-      issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
-    }
 
-    // handleDelete(e) {
-    //   e.preventDefault();
-    //   let issueData = this.state.issueData;
-  
-    //   issuesService.deleteComment(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
-    // }
+      let comments = this.state.issueData?.comments;
+      const texts = [];
+      comments.forEach(com => {
+        texts.push(com["text"])
+        })
 
-    handleModifyComment(e, pk) {
-      e.preventDefault();
-      let issueData = this.state.issueData;
-  
-      issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
+      console.log(texts);
+      if(
+        texts.some(common.checkIsEmpty)) 
+        {
+        this.setState(
+          prevState => ({
+            emptyField: {
+              ...prevState.emptyField,
+              comment: true,
+            }
+          })
+        );
+      }
+      else {
+        issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
+      }
+      
     }
 
     handleCreateComment(e, pk) {
       e.preventDefault();
       let newComment = this.state.newComment;
 
-      issuesService.createComment(newComment).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
+      if (!common.checkIsEmpty(newComment.text)) {
+        issuesService.createComment(newComment).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
+      } else {
+        this.setState(
+          prevState => ({
+            emptyField: {
+              ...prevState.emptyField,
+              comment: true,
+            }
+          })
+        );
+      }
     }
 
     handleDeleteComment(e, pk) {
@@ -356,14 +395,25 @@ class Issue extends Component {
           } 
 
         const errorAssoc = this.state.errorAssoc;
+
         let errorMessage;
+
         if (errorAssoc) {
             errorMessage = <React.Fragment>
-              
-            Wrong issue ID
-          </React.Fragment>;
+                              Wrong issue ID
+                           </React.Fragment>;
           } ;
-
+        
+        const emptyField = this.state.emptyField
+        // console.log('EEEEMMMPPTTTYY');
+        // console.log(emptyField)
+        let emptyComment;
+        if (emptyField.comment) {
+          emptyComment = <React.Fragment>
+                          {errorMessages.comment}
+                         </React.Fragment>;
+        };
+        
           const names = this.state.allUsers?.map(val => val.username);
 
           const personName = this.state.personName;
@@ -491,7 +541,10 @@ class Issue extends Component {
                 newCommentText={this.state.newComment.text}
                 handleChange={this.handleChangeAddComment}
                 handleClick={(e) => this.handleCreateComment(e)}
-              />         
+              />
+
+              {emptyComment}
+
 
               {/* Comments table */}
               <div>
@@ -506,7 +559,7 @@ class Issue extends Component {
                             pk={com.pk.toString()}
                             text={com.text}
                             handleChange={e => this.handleChangeComment(e, index, com.pk)}
-                            handleSubmit={(e) => this.handleModifyComment(e, com.pk)}
+                            handleSubmit={(e) => this.handleSubmitComment(e, com.pk)}
                             handleDelete={(e) => this.handleDeleteComment(e, com.pk)}
                           />
                         ))}

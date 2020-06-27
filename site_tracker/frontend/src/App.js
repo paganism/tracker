@@ -24,7 +24,7 @@ const BaseLayout = () => (
         <Route path="/login" component={LoginPage} />
         <Route path="/" exact component={Main} />
         <PrivateRoute path="/issues" exact component={IssuesList} />
-        <PrivateRoute path="/issues/:pk" exact component={Issue} />
+        <PrivateRoute path="/issues/:pk(\d+)" exact component={Issue} />
         <PrivateRoute path="/issue/create" exact component={CreateIssue} />
         <Route path="" component={NotFound} />
       </Switch>

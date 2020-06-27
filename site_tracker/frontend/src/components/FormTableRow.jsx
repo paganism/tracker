@@ -32,7 +32,6 @@ class FormTableRow extends Component {
       
     render() {
       const open = this.state.open
-      console.log(this.state.open)
       return (
             <TableRow key={this.props.pk}>
               <TableCell style={{ maxWidth: "3px" }}>
