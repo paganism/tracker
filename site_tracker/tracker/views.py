@@ -98,16 +98,6 @@ class CommentsViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all().order_by('-created')
     serializer_class = CommentStandAloneSerializer
 
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        if self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.AllowAny]
-        return [permission() for permission in permission_classes]
-
 
 class CustomSearchFilter(filters.SearchFilter):
     def get_search_fields(self, view, request):
@@ -122,15 +112,3 @@ class IssueViewSet(viewsets.ModelViewSet):
                      'priority__priorityname', 'tracker__title', 'inform__username', 'submitted_by__username',
                      ]
     filter_backends = (filters.SearchFilter,)
-
-
-    def get_permissions(self):
-
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        if self.action == 'create':
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.AllowAny]
-        return [permission() for permission in permission_classes]

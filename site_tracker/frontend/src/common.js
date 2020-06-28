@@ -7,4 +7,13 @@ export default class Common{
         }
         return false
     }
+
+    getName(pk, field, array)  {
+        array.forEach((item) => {
+            if (item.pk === pk) {
+              return item.username;
+            }
+            console.log(item.username);
+            });
+    }
 }
