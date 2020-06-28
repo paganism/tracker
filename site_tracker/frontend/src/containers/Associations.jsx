@@ -57,7 +57,7 @@ export default function AccocTable(props) {
                 <Link 
                     color={"textPrimary"}
                     href={`/issues/${row.pk}`}>
-                    [# {row.pk}]
+                    [#{row.pk}]
                 </Link>
               </TableCell>
               <TableCell align="left">

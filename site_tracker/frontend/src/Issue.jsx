@@ -15,8 +15,9 @@ import AddIcon from '@material-ui/icons/Add';
 
 import 'date-fns';
 
-import  FormTableRow  from  './components/FormTableRow';
+import FormTableRow  from  './components/FormTableRow';
 import DialogWindow from './components/DialogWindow';
+import PopoverMessage from './components/PopoverMessage';
 
 import IssueParams from './containers/IssueParams';
 import Description from './containers/Description';
@@ -73,7 +74,8 @@ const useStyles = theme => ({
   });
 
 const errorMessages = {
-  "comment": "comment is empty"
+  "comment": "comment is empty",
+  "title": "title is empty",
 }
 
 const issuesService = new IssuesService();
@@ -99,7 +101,8 @@ class Issue extends Component {
             open: false,
             assocInputValue: [],
             errorAssoc: false,
-            emptyField: { "comment": false },
+            emptyField: { "comment": false, "title": false },
+            anchorEl: null,
         };
         this.handleChangeComment = this.handleChangeComment.bind(this);
         this.handleTextArea = this.handleTextArea.bind(this);
@@ -280,8 +283,19 @@ class Issue extends Component {
     handleSubmitDescription(e) {
       e.preventDefault();
       let issueData = this.state.issueData;
-  
-      issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
+
+      if (!common.checkIsEmpty(issueData.title)) {
+        issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
+      } else {
+        this.setState(
+          prevState => ({
+            emptyField: {
+              ...prevState.emptyField,
+              title: true,
+            }
+          })
+        );
+      }
     }
 
     handleChangeComment(e, index, pk) {
@@ -306,22 +320,19 @@ class Issue extends Component {
     handleSubmitComment(e, pk) {
       e.preventDefault();
       let issueData = this.state.issueData;
-
       let comments = this.state.issueData?.comments;
+      let anchorEl = e.currentTarget;
       const texts = [];
       comments.forEach(com => {
         texts.push(com["text"])
         })
 
-      console.log(texts);
-      if(
-        texts.some(common.checkIsEmpty)) 
-        {
+      if(texts.some(common.checkIsEmpty)) {
+
         this.setState(
           prevState => ({
-            emptyField: {
-              ...prevState.emptyField,
-              comment: true,
+            anchorEl: {
+              ...prevState.anchorEl, anchorEl
             }
           })
         );
@@ -329,7 +340,6 @@ class Issue extends Component {
       else {
         issuesService.updateIssue(issueData).then(() => {window.location.assign(`/issues/${this.props.match.params.pk}`)});
       }
-      
     }
 
     handleCreateComment(e, pk) {
@@ -370,6 +380,12 @@ class Issue extends Component {
       this.setState({isModalOpen: true});
     }
 
+    handleClosePopover = (e) => {
+      e.stopPropagation();
+      this.setState({anchorEl: null})
+    }
+    
+
     render() {
 
         const { classes } = this.props;
@@ -405,12 +421,17 @@ class Issue extends Component {
           } ;
         
         const emptyField = this.state.emptyField
-        // console.log('EEEEMMMPPTTTYY');
-        // console.log(emptyField)
         let emptyComment;
         if (emptyField.comment) {
           emptyComment = <React.Fragment>
                           {errorMessages.comment}
+                         </React.Fragment>;
+        };
+
+        let emptyTitle;
+        if (emptyField.title) {
+          emptyTitle = <React.Fragment>
+                          {errorMessages.title}
                          </React.Fragment>;
         };
         
@@ -442,7 +463,6 @@ class Issue extends Component {
           else {
             assoc = <React.Fragment><Typography style={{marginTop: 10}}>There is no associations yet</Typography></React.Fragment> 
           }
-
           
         return (
 
@@ -450,11 +470,13 @@ class Issue extends Component {
               <SideBar/>
   
               {/* Issue headers */}
+              
               <IssueParams
                 // common
                 formControl={classes.formControl}
                 title={this.state.issueData.title}
                 handleChangeTitle={e => this.handleTextArea(e, 'title')}
+                emptyTitle={emptyTitle}
 
                 trackerPk={Number(this.state.issueData.tracker?.pk)}
                 handleChangeTracker={(e) => this.handleChangeSingleSelect(e, 'tracker')}
@@ -568,6 +590,13 @@ class Issue extends Component {
                   </TableContainer>
                 </Grid>
               </div>
+              <PopoverMessage
+                id="save-button"
+                open={Boolean(this.state.anchorEl)}
+                anchorEl={this.state.anchorEl}
+                text={"Comment cannot be empty"}
+                handleClose={this.handleClosePopover}            
+              />
             </div>
         );
         }

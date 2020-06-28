@@ -52,7 +52,11 @@ class FormTableRow extends Component {
                 />
                 </TableCell>
               <TableCell style={{ maxWidth: "3px" }} align="right">
-                <IconButton aria-label="save"
+                <IconButton 
+                  aria-label="save-button"
+                  aria-controls="save-button"
+                  id="save-button"
+                  aria-describedby="save-button"
                   onClick={e => this.props.handleSubmit(e, this.props.pk)}
                 >
                   <SaveIcon />                            
