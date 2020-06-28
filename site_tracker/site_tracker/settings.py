@@ -18,10 +18,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '+q&fk19x35^+7x9aiu(1=2j8i2!^j&zg1^di781x7=gq@c!f27'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'localhost', ]
 
@@ -127,15 +127,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:8000',
-    'http://localhost:8080',
     'http://localhost:3000',
-    'http://192.168.31.238:3000',
-    'http://192.168.31.238:8000',
-    'http://192.168.31.238:8080',
-    'http://192.168.31.61:3000',
-    'http://192.168.31.61:8000',
-    'http://192.168.31.160:8000',
-    'http://192.168.31.160:3000',
     'http://localhost',
 )
 
@@ -145,8 +137,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
@@ -154,3 +146,8 @@ REST_FRAMEWORK = {
 }
 
 AUTHENTICATION_BACKENDS = ['tracker.backends.EmailBackend']
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
