@@ -26,6 +26,7 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import filters
 from .filters import IssueFilter
+from django_filters import rest_framework as filter
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -111,4 +112,5 @@ class IssueViewSet(viewsets.ModelViewSet):
     search_fields = ['id', 'title', 'descr', 'status__statusname', 'assigned_to__username', 'project__projectname',
                      'priority__priorityname', 'tracker__title', 'inform__username', 'submitted_by__username',
                      ]
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (filters.SearchFilter, filter.DjangoFilterBackend,)
+    filterset_class = IssueFilter
