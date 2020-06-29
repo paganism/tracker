@@ -109,8 +109,8 @@ class IssueViewSet(viewsets.ModelViewSet):
     queryset = Issue.objects.all()
     serializer_class = IssueSerializer
     pagination_class = StandardResultsSetPagination
-    search_fields = ['id', 'title', 'descr', 'status__statusname', 'assigned_to__username', 'project__projectname',
-                     'priority__priorityname', 'tracker__title', 'inform__username', 'submitted_by__username',
+    search_fields = ['id', 'title', 'descr', 'status__statusname', 'project__projectname',
+                     'priority__priorityname', 'tracker__title', 'inform__username',
                      ]
     filter_backends = (filters.SearchFilter, filter.DjangoFilterBackend,)
     filterset_class = IssueFilter

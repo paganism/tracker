@@ -25,7 +25,11 @@ export default class IssueService{
           page: pageNumber,
           page_size: pageSize,
           search: search,
-          search_fields: searchFields 
+          assigned_to__username: searchFields.assigned,
+          submitted_by__username: searchFields.submitted,
+          tracker__title: searchFields.tracker,
+          project__projectname: searchFields.project,
+          status__statusname: searchFields.status,
         }
       }
 

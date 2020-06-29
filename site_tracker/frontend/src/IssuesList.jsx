@@ -14,6 +14,11 @@ import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import Link from '@material-ui/core/Link';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import InputLabel from '@material-ui/core/InputLabel';
+import BackspaceIcon from '@material-ui/icons/Backspace';
 
 import IssuesService  from  './IssuesService';
 import SideBar from './Side';
@@ -41,6 +46,16 @@ const StyledTableRow = withStyles((theme) => ({
 }))(TableRow);
 
 
+const useStyles = theme => ({
+
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120,
+    maxWidth: 300,
+  },
+});
+
+
 class IssuesList extends Component {
 
     constructor(props) {
@@ -51,8 +66,12 @@ class IssuesList extends Component {
             count: [],
             page: 1,
             rowsPerPage: 10,
-            searchField: "",
             searchQuery: "",
+            allUsers: [],
+            allTrackers: [],
+            allProjects: [],
+            allStatuses: [],
+            searchFields: {assigned: "", submitted: "", status: "", tracker: "", project: ""},
         };
         this.handleDelete  =  this.handleDelete.bind(this);
         this.handleChangePage = this.handleChangePage.bind(this);
@@ -65,6 +84,18 @@ class IssuesList extends Component {
     issuesService.getIssues().then(function (result) {
 
         self.setState({ issues:  result.results, nextPageURL:  result.next, count: result.count})
+    });
+    issuesService.getUsers().then((result) => {
+      this.setState({allUsers: result})
+    });
+    issuesService.getTrackers().then((result) => {
+      this.setState({allTrackers: result})
+    });
+    issuesService.getProjects().then((result) => {
+      this.setState({allProjects: result})
+    });
+    issuesService.getStatuses().then((result) => {
+      this.setState({allStatuses: result})
     });
 }
 
@@ -91,91 +122,207 @@ class IssuesList extends Component {
 
     handleChangeSearch = (event) => {
       let search = event.target.value;
-      let searchFields = this.state.searchField;
       let page = this.state.page
       let pageSize = this.state.rowsPerPage
+      let searchFields = this.state.searchFields
       this.setState(
-        prevState => ({
-          searchQuery: search}));
+        prevState => ({searchQuery: search}));
           console.log(this.state.searchQuery);
 
-      issuesService.getIssues(page, pageSize, search).then((result) => {
+      issuesService.getIssues(page, pageSize, search, searchFields).then((result) => {
         console.log(result)
         this.setState({ issues: result.results, count: result.count})
     });
     }
 
+    handleChangeSearchNoGlobal = (event, searchFields) => {
+      let page = this.state.page
+      let pageSize = this.state.rowsPerPage
+      
+      issuesService.getIssues(page, pageSize, this.state.searchQuery, searchFields).then((result) => {
+        console.log(result)
+        this.setState({ issues: result.results, count: result.count})
+    });
+    }
+
+    handleChangeSingleSelect(e, fieldName) {
+      let value = e.target.value;
+      let name = e.target.name;
+
+      this.setState(prevState => ({
+        searchFields: {
+          ...prevState.searchFields,             
+          [fieldName]: value                    
+          }
+        }),
+        () => this.handleChangeSearchNoGlobal(e, this.state.searchFields)
+      );
+    }
+
+    handleClearAllFilters(e) {
+      this.setState(prevState => ({
+        searchFields: {
+          ...prevState.searchFields,             
+          assigned: "",
+          submitted: "",
+          status: "",
+          tracker: "",
+          project: ""                    
+          }
+        }), )
+      this.setState({searchQuery: ""}, () => this.handleChangeSearchNoGlobal(e, this.state.searchFields))
+    }
+
   render() {
       const { classes } = this.props;
-      console.log("page");
-      console.log(this.state.page);
+      // console.log("page");
+      // console.log(this.state.page);
+
     return (
       <div>
         <SideBar/>
-        <Grid container item xs={10} spacing={1} style={{marginTop: 3 + 'em', marginLeft: 15 + 'em'}}>
-          <Grid item xs={3}> 
-            <TextField
-              label="Search"
-              variant="outlined"
-              value={this.state.searchQuery}
-              fullWidth
-              onChange={e => this.handleChangeSearch(e)}
-            />
-          </Grid>
+        <Grid container item xs={10} spacing={2} style={{marginTop: 3 + 'em', marginLeft: 15 + 'em'}}>
+              <TextField
+                label="Search"
+                variant="outlined"
+                value={this.state.searchQuery}
+                fullWidth
+                onChange={e => this.handleChangeSearch(e)}
+              />
+
+                <FormControl className={classes.formControl}>
+                  <InputLabel>Assignee</InputLabel>
+                  <Select
+                    value={this.state.searchFields.assigned}
+                    onChange={(e) => this.handleChangeSingleSelect(e, 'assigned')}
+                    autoWidth
+                  >
+                  {this.state.allUsers?.map((assigned) => (
+                    <MenuItem key={assigned.pk} value={assigned.username}>{assigned.username}</MenuItem>
+                  ))}
+                  <MenuItem key="" value="">all</MenuItem>
+                    
+                  </Select>
+                </FormControl>
+
+                <FormControl className={classes.formControl}>
+                  <InputLabel>Submitter</InputLabel>
+                  <Select
+                    value={this.state.searchFields.submitted}
+                    onChange={(e) => this.handleChangeSingleSelect(e, 'submitted')}
+                    autoWidth
+                  >
+                  {this.state.allUsers?.map((submitted) => (
+                  <MenuItem key={submitted.pk} value={submitted.username}>{submitted.username}</MenuItem>
+                    ))}
+                  <MenuItem key="" value="">all</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl className={classes.formControl}>
+                  <InputLabel>Tracker</InputLabel>
+                  <Select
+                    value={this.state.searchFields.tracker}
+                    onChange={(e) => this.handleChangeSingleSelect(e, 'tracker')}
+                    autoWidth
+                  >
+                  {this.state.allTrackers?.map((tracker) => (
+                  <MenuItem key={tracker.pk} value={tracker.title}>{tracker.title}</MenuItem>
+                    ))}
+                  <MenuItem key="" value="">all</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl className={classes.formControl}>
+                  <InputLabel>Project</InputLabel>
+                  <Select
+                    value={this.state.searchFields.project}
+                    onChange={(e) => this.handleChangeSingleSelect(e, 'project')}
+                    autoWidth
+                  >
+                  {this.state.allProjects?.map((project) => (
+                  <MenuItem key={project.pk} value={project.projectname}>{project.projectname}</MenuItem>
+                    ))}
+                  <MenuItem key="" value="">all</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl className={classes.formControl}>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={this.state.searchFields.status}
+                    onChange={(e) => this.handleChangeSingleSelect(e, 'status')}
+                    autoWidth
+                  >
+                  {this.state.allStatuses?.map((status) => (
+                  <MenuItem key={status.pk} value={status.statusname}>{status.statusname}</MenuItem>
+                    ))}
+                  <MenuItem key="" value="">all</MenuItem>
+                  </Select>
+                </FormControl>
+                
+                <IconButton 
+                  aria-label="clear-button"
+                  aria-controls="clear-button"
+                  id="clear-button"
+                  aria-describedby="save-button"
+                  onClick={e => this.handleClearAllFilters(e)}
+                >
+                  <BackspaceIcon fontSize="large"/>
+                </IconButton>
         </Grid>
           <Grid item xs={10}>
-          <TableContainer style={{ marginLeft: 15 + 'em', marginTop: 3 + 'em' }} component={Paper}>
-            <Table className="classes.table" aria-label="customized table">
-              <TableHead>
-                <TableRow>
+            <TableContainer style={{ marginLeft: 15 + 'em', marginTop: 3 + 'em' }} component={Paper}>
+              <Table className="classes.table" aria-label="customized table">
+                <TableHead>
+                  <TableRow>
 
-                  <StyledTableCell>ID</StyledTableCell>
-                  <StyledTableCell align="right">Tracker</StyledTableCell>
-                  <StyledTableCell align="left">Title</StyledTableCell>
-                  <StyledTableCell align="left">Summary</StyledTableCell>
-                  <StyledTableCell align="center">Status</StyledTableCell>
-                  <StyledTableCell align="center">Project</StyledTableCell>
-                  <StyledTableCell align="center">Assignee</StyledTableCell>
-                  <StyledTableCell align="center">Submitter</StyledTableCell>
-                  <StyledTableCell align="right">Actions</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
+                    <StyledTableCell>ID</StyledTableCell>
+                    <StyledTableCell align="right">Tracker</StyledTableCell>
+                    <StyledTableCell align="left">Title</StyledTableCell>
+                    <StyledTableCell align="left">Summary</StyledTableCell>
+                    <StyledTableCell align="center">Status</StyledTableCell>
+                    <StyledTableCell align="center">Project</StyledTableCell>
+                    <StyledTableCell align="center">Assignee</StyledTableCell>
+                    <StyledTableCell align="center">Submitter</StyledTableCell>
+                    <StyledTableCell align="right">Actions</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
 
 
-              {this.state.issues.map( c  =>
-              
-                  <StyledTableRow key={c.pk}>
-                    <StyledTableCell component="th" scope="row">
-                      <Link color={"textPrimary"} href={"/issues/" + c.pk}>[#{c.pk}]</Link>
-                    </StyledTableCell>
-                    <StyledTableCell align="right">{c.tracker.title}</StyledTableCell>
-                    <StyledTableCell align="left"><Link color={"textPrimary"} href={"/issues/" + c.pk}>{c.title}</Link></StyledTableCell>
-                    <StyledTableCell align="left">{c.descr}</StyledTableCell>
-                    <StyledTableCell align="center">{c.status.statusname}</StyledTableCell>
-                    <StyledTableCell align="center">{c.project.projectname}</StyledTableCell>
-                    <StyledTableCell align="center">{c.assigned_to.username}</StyledTableCell>
-                    <StyledTableCell align="center">{c.submitted_by.username}</StyledTableCell>
-                    <StyledTableCell align="right">
-                      <IconButton aria-label="delete" onClick={(e)=>  this.handleDelete(e, c.pk) }>
-                        <DeleteIcon />
-                      </IconButton>
+                {this.state.issues.map( c  =>
+                
+                    <StyledTableRow key={c.pk}>
+                      <StyledTableCell component="th" scope="row">
+                        <Link color={"textPrimary"} href={"/issues/" + c.pk}>[#{c.pk}]</Link>
                       </StyledTableCell>
-                  </StyledTableRow>
-              )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                      <StyledTableCell align="right">{c.tracker.title}</StyledTableCell>
+                      <StyledTableCell align="left"><Link color={"textPrimary"} href={"/issues/" + c.pk}>{c.title}</Link></StyledTableCell>
+                      <StyledTableCell align="left">{c.descr}</StyledTableCell>
+                      <StyledTableCell align="center">{c.status.statusname}</StyledTableCell>
+                      <StyledTableCell align="center">{c.project.projectname}</StyledTableCell>
+                      <StyledTableCell align="center">{c.assigned_to.username}</StyledTableCell>
+                      <StyledTableCell align="center">{c.submitted_by.username}</StyledTableCell>
+                      <StyledTableCell align="right">
+                        <IconButton aria-label="delete" onClick={(e)=>  this.handleDelete(e, c.pk) }>
+                          <DeleteIcon />
+                        </IconButton>
+                        </StyledTableCell>
+                    </StyledTableRow>
+                )}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-          <TablePagination
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                component="div"
-                count={this.state.count}
-                rowsPerPage={this.state.rowsPerPage}
-                page={this.state.page}
-                onChangePage={this.handleChangePage}
-                onChangeRowsPerPage={this.handleChangeRowsPerPage}
-              />
+            <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, 50]}
+                  component="div"
+                  count={this.state.count}
+                  rowsPerPage={this.state.rowsPerPage}
+                  page={this.state.page}
+                  onChangePage={this.handleChangePage}
+                  onChangeRowsPerPage={this.handleChangeRowsPerPage}
+                />
         </Grid>
     </div>
     );
@@ -183,4 +330,4 @@ class IssuesList extends Component {
   }
 };
 
-export default IssuesList //withStyles( { withTheme: true })(IssuesList);
+export default withStyles(useStyles, { withTheme: true })(IssuesList);
