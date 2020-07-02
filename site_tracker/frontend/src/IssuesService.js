@@ -29,7 +29,7 @@ export default class IssueService{
           submitted_by__username: searchFields.submitted,
           tracker__title: searchFields.tracker,
           project__projectname: searchFields.project,
-          status__statusname: searchFields.status,
+          status__statusname: searchFields.status.join(),
         }
       }
 

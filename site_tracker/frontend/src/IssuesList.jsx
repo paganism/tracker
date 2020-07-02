@@ -19,6 +19,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import BackspaceIcon from '@material-ui/icons/Backspace';
+import Input from '@material-ui/core/Input';
 
 import IssuesService  from  './IssuesService';
 import SideBar from './Side';
@@ -71,7 +72,7 @@ class IssuesList extends Component {
             allTrackers: [],
             allProjects: [],
             allStatuses: [],
-            searchFields: {assigned: "", submitted: "", status: "", tracker: "", project: ""},
+            searchFields: {assigned: "", submitted: "", status: [], tracker: "", project: ""},
         };
         this.handleDelete  =  this.handleDelete.bind(this);
         this.handleChangePage = this.handleChangePage.bind(this);
@@ -107,7 +108,7 @@ class IssuesList extends Component {
     handleChangePage = (event, newPage) => {
         let pageSize = this.state.rowsPerPage;
         this.setState({page: newPage})
-        issuesService.getIssues(newPage, pageSize).then((result) => {
+        issuesService.getIssues(newPage, pageSize, this.state.searchQuery, this.state.searchFields).then((result) => {
             console.log(result)
             this.setState({ issues: result.results, count: result.count})
         });
@@ -117,7 +118,7 @@ class IssuesList extends Component {
     handleChangeRowsPerPage = (event) => {
         this.setState({
             rowsPerPage: parseInt(event.target.value, 10), 
-            page: 0}, () => this.handleChangePage(event, this.state.page+1))
+            page: 0}, () => this.handleChangePage(event, this.state.page+1, this.state.searchQuery, this.state.searchFields))
     }
 
     handleChangeSearch = (event) => {
@@ -165,13 +166,30 @@ class IssuesList extends Component {
           ...prevState.searchFields,             
           assigned: "",
           submitted: "",
-          status: "",
+          status: [],
           tracker: "",
           project: ""                    
           }
         }), )
       this.setState({searchQuery: ""}, () => this.handleChangeSearchNoGlobal(e, this.state.searchFields))
     }
+
+    handleChangeMultipleSelect(e, fieldName) {
+      let value = e.target.value;
+        
+      this.setState(prevState => ({
+        searchFields: {
+          ...prevState.searchFields,             
+          [fieldName]: value                    
+          }
+        }),
+        () => this.handleChangeSearchNoGlobal(e, this.state.searchFields)
+      )
+      
+      console.log(value);
+      console.log(this.state.searchFields?.status);
+    };
+
 
   render() {
       const { classes } = this.props;
@@ -248,16 +266,17 @@ class IssuesList extends Component {
 
                 <FormControl className={classes.formControl}>
                   <InputLabel>Status</InputLabel>
-                  <Select
-                    value={this.state.searchFields.status}
-                    onChange={(e) => this.handleChangeSingleSelect(e, 'status')}
-                    autoWidth
-                  >
-                  {this.state.allStatuses?.map((status) => (
-                  <MenuItem key={status.pk} value={status.statusname}>{status.statusname}</MenuItem>
-                    ))}
-                  <MenuItem key="" value="">all</MenuItem>
-                  </Select>
+                    <Select
+                      multiple
+                      value={this.state.searchFields.status}
+                      onChange={(e) => this.handleChangeMultipleSelect(e, 'status')}
+                      input={<Input />}
+                      autoWidth
+                    >
+                      {this.state.allStatuses?.map((status) => (
+                      <MenuItem key={status.pk} value={status.statusname}>{status.statusname}</MenuItem>
+                        ))}
+                    </Select>
                 </FormControl>
                 
                 <IconButton 

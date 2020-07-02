@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
 from .models import Issue
 
+
 class IssueFilter(filters.FilterSet):
     class Meta:
         model = Issue
@@ -11,3 +12,8 @@ class IssueFilter(filters.FilterSet):
             'project__projectname': ['exact'],
             'submitted_by__username': ['exact'],
         }
+
+    status__statusname = filters.CharFilter(field_name='status__statusname', method='status_filter')
+
+    def status_filter(self, queryset, name, value):
+        return queryset.filter(status__statusname__in=value.split(','))
