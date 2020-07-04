@@ -63,9 +63,8 @@ class IssuesList extends Component {
         super(props);
         this.state  = {
             issues: [],
-            nextPageURL:  '',
             count: [],
-            page: 1,
+            page: 0,
             rowsPerPage: 10,
             searchQuery: "",
             allUsers: [],
@@ -84,7 +83,7 @@ class IssuesList extends Component {
     var  self  =  this;
     issuesService.getIssues().then(function (result) {
 
-        self.setState({ issues:  result.results, nextPageURL:  result.next, count: result.count})
+        self.setState({ issues:  result.results, count: result.count})
     });
     issuesService.getUsers().then((result) => {
       this.setState({allUsers: result})
@@ -118,7 +117,7 @@ class IssuesList extends Component {
     handleChangeRowsPerPage = (event) => {
         this.setState({
             rowsPerPage: parseInt(event.target.value, 10), 
-            page: 0}, () => this.handleChangePage(event, this.state.page+1, this.state.searchQuery, this.state.searchFields))
+            page: 0}, () => this.handleChangePage(event, this.state.page, this.state.searchQuery, this.state.searchFields))
     }
 
     handleChangeSearch = (event) => {
@@ -128,10 +127,8 @@ class IssuesList extends Component {
       let searchFields = this.state.searchFields
       this.setState(
         prevState => ({searchQuery: search}));
-          console.log(this.state.searchQuery);
 
       issuesService.getIssues(page, pageSize, search, searchFields).then((result) => {
-        console.log(result)
         this.setState({ issues: result.results, count: result.count})
     });
     }
@@ -171,6 +168,7 @@ class IssuesList extends Component {
           project: ""                    
           }
         }), )
+      this.setState({page: 0})
       this.setState({searchQuery: ""}, () => this.handleChangeSearchNoGlobal(e, this.state.searchFields))
     }
 
@@ -193,8 +191,6 @@ class IssuesList extends Component {
 
   render() {
       const { classes } = this.props;
-      // console.log("page");
-      // console.log(this.state.page);
 
     return (
       <div>

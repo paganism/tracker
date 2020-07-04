@@ -12,6 +12,7 @@ import NavBar from 'components/NavBar.js';
 import LoginPage from "LoginPage";
 import Footer from 'components/Footer';
 import NotFound from './containers/404';
+import ProjectList from './projects/ProjectList';
 
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 
@@ -26,6 +27,7 @@ const BaseLayout = () => (
         <PrivateRoute path="/issues" exact component={IssuesList} />
         <PrivateRoute path="/issues/:pk(\d+)" exact component={Issue} />
         <PrivateRoute path="/issue/create" exact component={CreateIssue} />
+        <PrivateRoute path="/projects" exact component={ProjectList} />
         <Route path="" component={NotFound} />
       </Switch>
     </div>

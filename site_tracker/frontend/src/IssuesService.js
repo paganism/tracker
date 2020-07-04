@@ -20,9 +20,9 @@ export default class IssueService{
     getIssues(pageNumber, pageSize, search, searchFields) {
       let params = {};
       let config = this.getConfig();
-      if ((pageNumber && pageNumber !== 0)|| pageSize) {
+      if (pageNumber || pageSize) {
         params = {
-          page: pageNumber,
+          page: pageNumber +1,
           page_size: pageSize,
           search: search,
           assigned_to__username: searchFields.assigned,
