@@ -92,10 +92,14 @@ export default function SideBar() {
           </List>
           <Divider />
           <List>
+            <Link 
+                color={"textPrimary"}
+                href={`/projects/`}>
               <ListItem button>
                 <ListItemIcon><AccountTreeIcon /></ListItemIcon>
                 <ListItemText primary={"Projects"} />
               </ListItem>
+            </Link>
               <ListItem button>
                 <ListItemIcon><BarChartIcon /></ListItemIcon>
                 <ListItemText primary={"Trackers"} />
