@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import SideBar from '../Side';
 import IssuesService from '../IssuesService';
 import Grid from '@material-ui/core/Grid';
+import TextField from '@material-ui/core/TextField';
 
 
 const issuesService = new IssuesService();
@@ -20,22 +21,19 @@ const useStyles = makeStyles({
     marginTop: 50,
     marginLeft: 15 + 'em',
   },
-  bullet: {
-    display: 'inline-block',
-    margin: '0 2px',
-    transform: 'scale(0.8)',
-  },
   title: {
     fontSize: 14,
   },
-  pos: {
-    marginBottom: 12,
+  search: {
+    marginLeft: 15 + 'em',
+    marginTop: 3 + 'em',
   },
 });
 
 export default function ProjectList() {
   const classes = useStyles();
   const [allProjects, setAllProjects] = useState([]);
+  const [searchQuery, setSearchQuery] = useState([]);
 
   useEffect(() => {
     issuesService.getProjects().then((result) => {
@@ -43,13 +41,35 @@ export default function ProjectList() {
     })
   }, [])
 
+  const handleChangeSearch = (event) => {
+    let search = event.target.value;
+    //let pageSize = this.state.rowsPerPage
+    //let searchFields = this.state.searchFields
+    setSearchQuery(search);
+
+    issuesService.getProjects(search).then((result) => {
+      setAllProjects(result)
+  });
+  }
+
   return (
     
     <div>
       {console.log(allProjects)}
       <SideBar/>
       <Grid container item xs={10} spacing={1} >
-      {allProjects.map((project) => (
+          <TextField className={classes.search}
+                label="Search"
+                variant="outlined"
+                value={searchQuery}
+                fullWidth
+                onChange={handleChangeSearch}
+          />
+      </Grid>
+      <Grid container item xs={10} spacing={1} >
+      {allProjects.map((project) => {
+        if (project.pk >0) {
+          return (
 
       <Card className={classes.root}>
         <CardContent>
@@ -66,7 +86,7 @@ export default function ProjectList() {
           <Button size="small">Details</Button>
         </CardActions>
       </Card>
-      ))}
+      )}})}
       </Grid>
     </div>
   );
