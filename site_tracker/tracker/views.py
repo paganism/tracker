@@ -89,6 +89,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
+    pagination_class = StandardResultsSetPagination
+    search_fields = ['projectname', 'descr', ]
+    filter_backends = (filters.SearchFilter, filter.DjangoFilterBackend,)
+
 
 class TrackerViewSet(viewsets.ModelViewSet):
     queryset = Tracker.objects.all()
@@ -98,11 +102,6 @@ class TrackerViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all().order_by('-created')
     serializer_class = CommentStandAloneSerializer
-
-
-class CustomSearchFilter(filters.SearchFilter):
-    def get_search_fields(self, view, request):
-        return request.GET.getlist('search_fields', [])
 
 
 class IssueViewSet(viewsets.ModelViewSet):

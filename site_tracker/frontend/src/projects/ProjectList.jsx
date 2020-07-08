@@ -37,7 +37,7 @@ export default function ProjectList() {
 
   useEffect(() => {
     issuesService.getProjects().then((result) => {
-      setAllProjects(result)
+      setAllProjects(result.data.results)
     })
   }, [])
 
@@ -48,7 +48,7 @@ export default function ProjectList() {
     setSearchQuery(search);
 
     issuesService.getProjects(search).then((result) => {
-      setAllProjects(result)
+      setAllProjects(result.data.results)
   });
   }
 

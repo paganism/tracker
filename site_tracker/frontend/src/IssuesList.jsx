@@ -92,7 +92,7 @@ class IssuesList extends Component {
       this.setState({allTrackers: result})
     });
     issuesService.getProjects().then((result) => {
-      this.setState({allProjects: result})
+      this.setState({allProjects: result.data.results})
     });
     issuesService.getStatuses().then((result) => {
       this.setState({allStatuses: result})

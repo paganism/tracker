@@ -87,10 +87,6 @@ export default class IssueService{
     }
 
     createComment(comment) {
-        // let storageLogin = localStorage.getItem('login');
-        // let acsess_token = JSON.parse(storageLogin).token
-    
-        // let AuthStr = 'Token '.concat(acsess_token); 
         let config = this.getConfig();
     
         return axios({
@@ -106,10 +102,6 @@ export default class IssueService{
     };
 
     deleteComment(pk){
-        // let storageLogin = localStorage.getItem('login');
-        // let acsess_token = JSON.parse(storageLogin).token
-    
-        // let AuthStr = 'Token '.concat(acsess_token); 
         let config = this.getConfig();
     
         return axios({
@@ -142,11 +134,19 @@ export default class IssueService{
     }
 
     // Project
-    getProjects() {
+    getProjects(search) {
+      let params = {};
       let config = this.getConfig();
+      if (search) {
+        params = {
+          search: search,
+        }
+      }
       const url = `${apiURL}/api/projects/`;
-      return axios.get(url, {headers: config}).then(response => response.data).catch(function (error) {
-          console.log(error);
+      return axios.get(url, {
+            params: params,
+            headers: config
+            }).then(response => response).catch(function (error) {console.log(error);
         });
     }
 
